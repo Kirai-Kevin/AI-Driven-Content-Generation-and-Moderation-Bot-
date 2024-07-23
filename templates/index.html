@@ -4,9 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI-Driven Content Generation and Moderation Bot</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
 </head>
 <body>
+    <button class="dark-mode-toggle" onclick="toggleDarkMode()">
+        <i class="fas fa-moon"></i>
+    </button>
     <div class="container">
         <h1>AI-Driven Content Generation and Moderation Bot</h1>
         <p>Welcome, {{ current_user.username }}! <a href="{{ url_for('logout') }}">Logout</a></p>
@@ -162,6 +167,18 @@
                 hideLoader('personalBrandLoader');
             });
         }
+        
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const darkModeToggle = document.querySelector('.dark-mode-toggle i');
+            if (document.body.classList.contains('dark-mode')) {
+                darkModeToggle.classList.remove('fa-moon');
+                darkModeToggle.classList.add('fa-sun');
+            } else {
+                darkModeToggle.classList.remove('fa-sun');
+                darkModeToggle.classList.add('fa-moon');
+            }
+        }
     </script>
 </body>
-</html>

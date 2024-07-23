@@ -5,6 +5,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import google.generativeai as genai
 from dotenv import load_dotenv
 from models import db, User
+import random
+import emoji
 
 load_dotenv()
 
@@ -25,6 +27,20 @@ def load_user(user_id):
 # Configure the Gemini Pro model
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 model = genai.GenerativeModel('gemini-pro')
+
+def add_hashtags_and_emojis(text):
+    words = text.split()
+    hashtags = ['#awesome', '#amazing', '#cool', '#wow', '#love', '#fun', '#beautiful', '#happy']
+    emojis = [':smile:', ':heart:', ':star:', ':fire:', ':thumbsup:', ':sunglasses:', ':rocket:', ':sparkles:']
+    
+    for i in range(min(3, len(words))):
+        index = random.randint(0, len(words) - 1)
+        words[index] = words[index] + ' ' + random.choice(hashtags)
+    
+    text = ' '.join(words)
+    text += ' ' + ' '.join(random.sample(emojis, 3))
+    
+    return emoji.emojize(text, language='alias')
 
 @app.route('/')
 @login_required
@@ -83,7 +99,8 @@ def generate_content():
     """
     
     response = model.generate_content(prompt)
-    return jsonify({"generated_content": response.text})
+    creative_content = add_hashtags_and_emojis(response.text)
+    return jsonify({"generated_content": creative_content})
 
 @app.route('/moderate', methods=['POST'])
 @login_required
@@ -103,7 +120,8 @@ def moderate_content():
     """
     
     response = model.generate_content(prompt)
-    return jsonify({"moderation_result": response.text})
+    moderation_result = add_hashtags_and_emojis(response.text)
+    return jsonify({"moderation_result": moderation_result})
 
 @app.route('/multiple_posts', methods=['POST'])
 @login_required
@@ -115,7 +133,8 @@ def multiple_posts():
     prompt = f"Generate {num_posts} different social media posts based on this idea: {idea}. Do not include asterisks in the output."
     
     response = model.generate_content(prompt)
-    return jsonify({"multiple_posts": response.text})
+    creative_posts = add_hashtags_and_emojis(response.text)
+    return jsonify({"multiple_posts": creative_posts})
 
 @app.route('/personal_brand', methods=['POST'])
 @login_required
@@ -127,7 +146,8 @@ def personal_brand():
     prompt = f"Create content to grow a personal brand on {platform} in the {niche} niche. Do not include asterisks in the output."
     
     response = model.generate_content(prompt)
-    return jsonify({"personal_brand_content": response.text})
+    creative_brand_content = add_hashtags_and_emojis(response.text)
+    return jsonify({"personal_brand_content": creative_brand_content})
 
 if __name__ == '__main__':
     with app.app_context():
