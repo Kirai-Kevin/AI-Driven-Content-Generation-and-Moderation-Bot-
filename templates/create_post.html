@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Create a New Post</h1>
+    <form action="{{ url_for('new_post') }}" method="POST">
+        <div class="form-group">
+            <label for="content">What's on your mind?</label>
+            <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Preview Post</button>
+    </form>
+</div>
+{% endblock %}

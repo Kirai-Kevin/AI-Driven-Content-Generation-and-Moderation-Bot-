@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Review Your Post</h1>
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Original Content:</h5>
+            <p class="card-text">{{ original_content }}</p>
+        </div>
+    </div>
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Generated Content:</h5>
+            <p class="card-text">{{ generated_content }}</p>
+        </div>
+    </div>
+    <form action="{{ url_for('confirm_post') }}" method="post">
+        <input type="hidden" name="content" value="{{ generated_content }}">
+        <button type="submit" class="btn btn-primary">Approve and Post</button>
+        <a href="{{ url_for('new_post') }}" class="btn btn-secondary">Discard</a>
+    </form>
+</div>
+{% endblock %}

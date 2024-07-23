@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Revise Your Post</h1>
+    <div class="alert alert-warning" role="alert">
+        Your original post was flagged as potentially inappropriate. Please review the suggested alternative or make your own revisions.
+    </div>
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Original Content:</h5>
+            <p class="card-text">{{ original_content }}</p>
+        </div>
+    </div>
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Suggested Alternative:</h5>
+            <p class="card-text">{{ alternative_content }}</p>
+        </div>
+    </div>
+    <form action="{{ url_for('revise_post') }}" method="post">
+        <div class="form-group">
+            <label for="content">Revise your post:</label>
+            <textarea class="form-control" id="content" name="content" rows="4">{{ alternative_content }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Post Revised Content</button>
+        <a href="{{ url_for('new_post') }}" class="btn btn-secondary">Discard</a>
+    </form>
+</div>
+{% endblock %}
