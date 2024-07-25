@@ -4,22 +4,26 @@
     <h1>Review Your Post</h1>
     <div class="card mb-3">
         <div class="card-body">
-            <h5 class="card-title">Original Content:</h5>
-            <p>{{ original_content }}</p>
-            <p>Word count: {{ original_content.split()|length }}</p>
-        </div>
-    </div>
-    <div class="card mb-3">
-        <div class="card-body">
             <h5 class="card-title">Generated Content:</h5>
             <p>{{ generated_content }}</p>
             <p>Word count: {{ generated_content.split()|length }} (Desired: {{ desired_word_count }})</p>
         </div>
     </div>
-    <form action="{{ url_for('confirm_post') }}" method="post">
+    
+    <form action="{{ url_for('select_hashtags') }}" method="post">
         <input type="hidden" name="content" value="{{ generated_content }}">
-        <button type="submit" class="btn btn-primary">Approve and Post</button>
+        <h5>Select Hashtags:</h5>
+        {% for hashtag in hashtags %}
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="hashtags" value="{{ hashtag }}" id="{{ hashtag }}">
+            <label class="form-check-label" for="{{ hashtag }}">
+                {{ hashtag }}
+            </label>
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary mt-3">Approve and Post</button>
     </form>
-    <a href="{{ url_for('new_post') }}" class="btn btn-secondary">Discard</a>
+    
+    <a href="{{ url_for('new_post') }}" class="btn btn-secondary mt-3">Discard</a>
 </div>
 {% endblock %}
