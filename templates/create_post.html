@@ -8,29 +8,19 @@
             <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
         </div>
         <div class="form-group">
-            <label for="wordCount">Word Count:</label>
-            <input type="number" class="form-control" id="wordCount" name="wordCount" min="1" max="120" value="1" required>
+            <label for="wordCount">Desired Word Count:</label>
+            <input type="number" class="form-control" id="wordCount" name="wordCount" min="1" max="120" value="30" required>
         </div>
         <button type="submit" class="btn btn-primary">Preview Post</button>
     </form>
+    <p id="currentWordCount">Current word count: 0</p>
 </div>
 
 <script>
 document.getElementById('content').addEventListener('input', function() {
     var words = this.value.trim().split(/\s+/);
     var wordCount = words.length;
-    document.getElementById('wordCount').value = wordCount;
-});
-
-document.getElementById('wordCount').addEventListener('change', function() {
-    var content = document.getElementById('content').value;
-    var words = content.trim().split(/\s+/);
-    var targetCount = parseInt(this.value);
-    
-    if (words.length > targetCount) {
-        words = words.slice(0, targetCount);
-        document.getElementById('content').value = words.join(' ');
-    }
+    document.getElementById('currentWordCount').textContent = 'Current word count: ' + wordCount;
 });
 </script>
 {% endblock %}

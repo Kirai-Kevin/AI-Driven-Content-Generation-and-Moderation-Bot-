@@ -13,7 +13,7 @@
         <div class="card-body">
             <h5 class="card-title">Generated Content:</h5>
             <p>{{ generated_content }}</p>
-            <p>Word count: {{ generated_content.split()|length }}</p>
+            <p>Word count: {{ generated_content.split()|length }} (Desired: {{ desired_word_count }})</p>
         </div>
     </div>
     <form action="{{ url_for('confirm_post') }}" method="post">

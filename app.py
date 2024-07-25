@@ -14,17 +14,10 @@ from datetime import datetime
 load_dotenv()
 
 app = Flask(__name__)
+
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-if not app.config['SECRET_KEY']:
-    raise ValueError("No SECRET_KEY set for Flask application")
-
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
-if not app.config['SQLALCHEMY_DATABASE_URI']:
-    raise ValueError("No DATABASE_URI set for Flask application")
-
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-print(f"SQLALCHEMY_DATABASE_URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
 
 # Initialize the database
 db.init_app(app)
@@ -56,9 +49,9 @@ def add_hashtags_and_emojis(text):
     
     return emoji.emojize(text, language='alias')
 
-def generate_content(prompt):
+def generate_content(prompt, desired_word_count):
     try:
-        response = model.generate_content(f"Generate a social media post about: {prompt}")
+        response = model.generate_content(f"Generate a social media post about: {prompt}. The post should be exactly {desired_word_count} words long.")
         
         if not response.candidates or not response.candidates[0].content:
             if response.candidates and response.candidates[0].safety_ratings:
@@ -70,12 +63,12 @@ def generate_content(prompt):
         
         generated_text = response.text
         words = generated_text.split()
-        word_count = len(prompt.split())
         
-        if len(words) > word_count:
-            words = words[:word_count]
-        elif len(words) < word_count:
-            words.extend([''] * (word_count - len(words)))
+        # Ensure the generated content has exactly the desired word count
+        if len(words) > desired_word_count:
+            words = words[:desired_word_count]
+        elif len(words) < desired_word_count:
+            words.extend([''] * (desired_word_count - len(words)))
         
         generated_text = ' '.join(words).strip()
         
@@ -129,22 +122,14 @@ def profile(username):
 def new_post():
     if request.method == 'POST':
         content = request.form['content']
-        word_count = int(request.form['wordCount'])
+        desired_word_count = int(request.form['wordCount'])
         
-        # Split the content into words
-        words = content.split()
+        # Generate content based on the user's input and desired word count
+        generated_content = generate_content(content, desired_word_count)
         
-        # Trim or pad the content to match the desired word count
-        if len(words) > word_count:
-            words = words[:word_count]
-        elif len(words) < word_count:
-            words.extend([''] * (word_count - len(words)))
-        
-        content = ' '.join(words).strip()
-        
-        generated_content = generate_content(content)
-        return render_template('confirm_post.html', original_content=content, generated_content=generated_content)
+        return render_template('confirm_post.html', original_content=content, generated_content=generated_content, desired_word_count=desired_word_count)
     return render_template('create_post.html')
+
 
 @app.route('/post/confirm', methods=['POST'])
 @login_required
@@ -246,11 +231,7 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
-def create_tables():
+if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-
-if __name__ == '__main__':
-    create_tables()
-    # Remove the app.run() call
-    # app.run(debug=True)  # This line should be removed or commented out
+    app.run(debug=True)
