@@ -15,8 +15,16 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+if not app.config['SECRET_KEY']:
+    raise ValueError("No SECRET_KEY set for Flask application")
+
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
+if not app.config['SQLALCHEMY_DATABASE_URI']:
+    raise ValueError("No DATABASE_URI set for Flask application")
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+print(f"SQLALCHEMY_DATABASE_URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
 
 # Initialize the database
 db.init_app(app)
@@ -213,7 +221,11 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
-if __name__ == '__main__':
+def create_tables():
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+
+if __name__ == '__main__':
+    create_tables()
+    # Remove the app.run() call
+    # app.run(debug=True)  # This line should be removed or commented out
