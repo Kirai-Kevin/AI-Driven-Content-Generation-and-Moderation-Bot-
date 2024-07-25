@@ -1,14 +1,36 @@
 {% extends "base.html" %}
-
 {% block content %}
 <div class="container">
     <h1>Create a New Post</h1>
-    <form action="{{ url_for('new_post') }}" method="POST">
+    <form action="{{ url_for('new_post') }}" method="post">
         <div class="form-group">
             <label for="content">What's on your mind?</label>
             <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
         </div>
+        <div class="form-group">
+            <label for="wordCount">Word Count:</label>
+            <input type="number" class="form-control" id="wordCount" name="wordCount" min="1" max="120" value="1" required>
+        </div>
         <button type="submit" class="btn btn-primary">Preview Post</button>
     </form>
 </div>
+
+<script>
+document.getElementById('content').addEventListener('input', function() {
+    var words = this.value.trim().split(/\s+/);
+    var wordCount = words.length;
+    document.getElementById('wordCount').value = wordCount;
+});
+
+document.getElementById('wordCount').addEventListener('change', function() {
+    var content = document.getElementById('content').value;
+    var words = content.trim().split(/\s+/);
+    var targetCount = parseInt(this.value);
+    
+    if (words.length > targetCount) {
+        words = words.slice(0, targetCount);
+        document.getElementById('content').value = words.join(' ');
+    }
+});
+</script>
 {% endblock %}

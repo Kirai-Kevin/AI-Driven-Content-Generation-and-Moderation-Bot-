@@ -68,7 +68,18 @@ def generate_content(prompt):
             
             return "The content could not be generated. Please try again with a different prompt."
         
-        return add_hashtags_and_emojis(response.text)
+        generated_text = response.text
+        words = generated_text.split()
+        word_count = len(prompt.split())
+        
+        if len(words) > word_count:
+            words = words[:word_count]
+        elif len(words) < word_count:
+            words.extend([''] * (word_count - len(words)))
+        
+        generated_text = ' '.join(words).strip()
+        
+        return add_hashtags_and_emojis(generated_text)
     except Exception as e:
         print(f"Error in generate_content: {str(e)}")
         return "An error occurred while generating content. Please try again."
@@ -112,13 +123,27 @@ def profile(username):
     posts = Post.query.filter_by(author=user).order_by(Post.timestamp.desc()).all()
     return render_template('profile.html', user=user, posts=posts)
 
+
 @app.route('/post/new', methods=['GET', 'POST'])
 @login_required
 def new_post():
     if request.method == 'POST':
-        original_content = request.form['content']
-        generated_content = generate_content(original_content)
-        return render_template('confirm_post.html', original_content=original_content, generated_content=generated_content)
+        content = request.form['content']
+        word_count = int(request.form['wordCount'])
+        
+        # Split the content into words
+        words = content.split()
+        
+        # Trim or pad the content to match the desired word count
+        if len(words) > word_count:
+            words = words[:word_count]
+        elif len(words) < word_count:
+            words.extend([''] * (word_count - len(words)))
+        
+        content = ' '.join(words).strip()
+        
+        generated_content = generate_content(content)
+        return render_template('confirm_post.html', original_content=content, generated_content=generated_content)
     return render_template('create_post.html')
 
 @app.route('/post/confirm', methods=['POST'])
