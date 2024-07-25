@@ -2,6 +2,17 @@
 {% block content %}
 <div class="container">
     <h1>Create a New Post</h1>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
     <form action="{{ url_for('new_post') }}" method="post">
         <div class="form-group">
             <label for="content">What's on your mind?</label>
@@ -13,11 +24,11 @@
         </div>
         <div class="form-group">
             <label for="topic">Topic:</label>
-            <input type="text" class="form-control" id="topic" name="topic" required>
+            <input type="text" class="form-control" id="topic" name="topic">
         </div>
         <div class="form-group">
             <label for="mood">Mood:</label>
-            <input type="text" class="form-control" id="mood" name="mood" required>
+            <input type="text" class="form-control" id="mood" name="mood" >
         </div>
         <button type="submit" class="btn btn-primary">Preview Post</button>
     </form>

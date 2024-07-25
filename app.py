@@ -16,8 +16,16 @@ load_dotenv()
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+if not app.config['SECRET_KEY']:
+    raise ValueError("No SECRET_KEY set for Flask application")
+
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
+if not app.config['SQLALCHEMY_DATABASE_URI']:
+    raise ValueError("No DATABASE_URI set for Flask application")
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+print(f"SQLALCHEMY_DATABASE_URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
 
 print(f"SQLALCHEMY_DATABASE_URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
 
@@ -100,16 +108,33 @@ def generate_alternative_content(content):
 
 def moderate_content(content):
     try:
-        prompt = f"Determine if the following content is appropriate for a general audience: {content}. Respond with 'Appropriate' or 'Inappropriate' followed by a brief explanation."
+        prompt = f"""Moderate the following content for a general audience social media platform. 
+        Check for inappropriate language, bias, and guideline violations.
+        Respond with one of these:
+        'APPROVED' if it's appropriate,
+        'BIASED' if it shows unfair prejudice or discrimination,
+        'GUIDELINE_VIOLATION' if it breaks community standards,
+        followed by a brief explanation: {content}"""
         response = model.generate_content(prompt)
-        
-        if not response.candidates or not response.candidates[0].content:
-            return "Unable to moderate content. Please review your post manually."
-        
-        return response.text
+        return response.text.strip()
     except Exception as e:
         print(f"Error in moderate_content: {str(e)}")
-        return "An error occurred while moderating content. Please review your post manually."
+        return "ERROR: Unable to moderate content"
+    
+def moderate_comment(content):
+    try:
+        prompt = f"""Moderate the following comment for a general audience social media platform. 
+        Check for inappropriate language, vulgarity, and guideline violations.
+        Respond with one of these:
+        'APPROVED' if it's appropriate,
+        'INAPPROPRIATE' if it contains vulgar or inappropriate content,
+        'GUIDELINE_VIOLATION' if it breaks community standards,
+        followed by a brief explanation: {content}"""
+        response = model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        print(f"Error in moderate_comment: {str(e)}")
+        return "ERROR: Unable to moderate comment"
 
 @app.route('/')
 @login_required
@@ -134,50 +159,51 @@ def new_post():
         topic = request.form['topic']
         mood = request.form['mood']
         
-        # Generate content based on the user's input and desired word count
-        generated_content, hashtags = generate_content(content, desired_word_count, topic, mood)
+        # Moderate the original content
+        moderation_result = moderate_content(content)
         
-        return render_template('confirm_post.html', 
-                               original_content=content, 
-                               generated_content=generated_content, 
-                               desired_word_count=desired_word_count,
-                               hashtags=hashtags)
+        if moderation_result.startswith('APPROVED'):
+            # Generate content based on the user's input and desired word count
+            generated_content, hashtags = generate_content(content, desired_word_count, topic, mood)
+            
+            return render_template('confirm_post.html', 
+                                   original_content=content, 
+                                   generated_content=generated_content, 
+                                   desired_word_count=desired_word_count,
+                                   hashtags=hashtags)
+        elif moderation_result.startswith('BIASED') or moderation_result.startswith('GUIDELINE_VIOLATION'):
+            # Extract the explanation from the moderation result
+            explanation = moderation_result.split(': ', 1)[1] if ': ' in moderation_result else "No specific explanation provided."
+            
+            flash(f'Your post cannot be published. Reason: {explanation}', 'error')
+            return redirect(url_for('new_post'))
+        else:
+            flash('An error occurred during content moderation. Please try again.', 'error')
+            return redirect(url_for('new_post'))
+    
     return render_template('create_post.html')
-
-@app.route('/post/select_hashtags', methods=['POST'])
-@login_required
-def select_hashtags():
-    content = request.form['content']
-    selected_hashtags = request.form.getlist('hashtags')
-    
-    # Add selected hashtags to the end of the content
-    final_content = content + ' ' + ' '.join(selected_hashtags)
-    
-    # Create and save the post
-    post = Post(content=final_content, author=current_user)
-    db.session.add(post)
-    db.session.commit()
-    
-    flash('Your post has been created!', 'success')
-    return redirect(url_for('home'))
-
 
 @app.route('/post/confirm', methods=['POST'])
 @login_required
 def confirm_post():
     content = request.form['content']
+    
+    # Final moderation check
     moderation_result = moderate_content(content)
     
-    if 'Appropriate' in moderation_result:
+    if moderation_result.startswith('APPROVED'):
         post = Post(content=content, author=current_user)
         db.session.add(post)
         db.session.commit()
         flash('Your post has been created!', 'success')
         return redirect(url_for('home'))
     else:
-        alternative_content = generate_alternative_content(content)
-        return render_template('revise_post.html', original_content=content, alternative_content=alternative_content)
-
+        # Extract the explanation from the moderation result
+        explanation = moderation_result.split(': ', 1)[1] if ': ' in moderation_result else "No specific explanation provided."
+        
+        flash(f'Your post cannot be published. Reason: {explanation}', 'error')
+        return redirect(url_for('new_post'))
+    
 @app.route('/post/revise', methods=['POST'])
 @login_required
 def revise_post():
@@ -192,10 +218,21 @@ def revise_post():
 @login_required
 def comment_post(post_id):
     content = request.form['content']
-    post = Post.query.get_or_404(post_id)
-    comment = Comment(content=content, author=current_user, post=post)
-    db.session.add(comment)
-    db.session.commit()
+    
+    # Moderate the comment
+    moderation_result = moderate_comment(content)
+    
+    if moderation_result.startswith('APPROVED'):
+        post = Post.query.get_or_404(post_id)
+        comment = Comment(content=content, author=current_user, post=post)
+        db.session.add(comment)
+        db.session.commit()
+        flash('Your comment has been posted.', 'success')
+    else:
+        # Extract the explanation from the moderation result
+        explanation = moderation_result.split(': ', 1)[1] if ': ' in moderation_result else "No specific explanation provided."
+        flash(f'Your comment cannot be posted. Reason: {explanation}', 'error')
+    
     return redirect(url_for('home'))
 
 @app.route('/post/<int:post_id>/like', methods=['POST'])
@@ -262,7 +299,9 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
-if __name__ == '__main__':
+def create_tables():
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+
+if __name__ == '__main__':
+    create_tables()
