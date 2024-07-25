@@ -16,8 +16,8 @@ class Post(db.Model):
     content = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    comments = db.relationship('Comment', backref='post', lazy='dynamic')
-    likes = db.relationship('Like', backref='post', lazy='dynamic')
+    comments = db.relationship('Comment', backref='post', lazy='dynamic', cascade='all, delete-orphan')
+    likes = db.relationship('Like', backref='post', lazy='dynamic', cascade='all, delete-orphan')
 
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)

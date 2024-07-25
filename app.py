@@ -235,6 +235,20 @@ def comment_post(post_id):
     
     return redirect(url_for('home'))
 
+@app.route('/comment/<int:comment_id>/delete', methods=['POST'])
+@login_required
+def delete_comment(comment_id):
+    comment = Comment.query.get_or_404(comment_id)
+    if comment.author != current_user:
+        flash('You do not have permission to delete this comment.', 'error')
+        return redirect(url_for('home'))
+    
+    post_id = comment.post_id
+    db.session.delete(comment)
+    db.session.commit()
+    flash('Your comment has been deleted.', 'success')
+    return redirect(url_for('home'))
+
 @app.route('/post/<int:post_id>/like', methods=['POST'])
 @login_required
 def like_post(post_id):
