@@ -38,6 +38,14 @@ body {
     padding: 20px;
 }
 
+/* Media query for phones and small screens */
+@media screen and (max-width: 767px) {
+    .container {
+        width: 100%;
+        padding: 10px;
+    }
+}
+
 h1 {
     color: var(--header-color);
     text-align: center;
@@ -190,3 +198,63 @@ body {
     border-color: #bd2130;
 }
 
+
+@media screen and (max-width: 767px) {
+    body {
+        font-size: 16px; /* Slightly smaller font size for mobile */
+    }
+
+    h1 {
+        font-size: 2em;
+    }
+
+    h2 {
+        font-size: 1.5em;
+    }
+
+    .section {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    input[type="text"], input[type="password"], input[type="number"], textarea, select {
+        font-size: 16px; /* Prevent zoom on focus in iOS */
+    }
+
+    button {
+        font-size: 16px;
+    }
+}
+
+
+@media screen and (max-width: 767px) {
+    .navbar-nav {
+        flex-direction: column;
+    }
+
+    .nav-item {
+        margin-bottom: 10px;
+    }
+}
+
+@media screen and (max-width: 767px) {
+    .card {
+        margin-bottom: 15px;
+    }
+
+    .card-body {
+        padding: 10px;
+    }
+}
+
+@media screen and (max-width: 767px) {
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .btn {
+        display: block;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
