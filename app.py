@@ -16,13 +16,7 @@ load_dotenv()
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-if not app.config['SECRET_KEY']:
-    raise ValueError("No SECRET_KEY set for Flask application")
-
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
-if not app.config['SQLALCHEMY_DATABASE_URI']:
-    raise ValueError("No DATABASE_URI set for Flask application")
-
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 print(f"SQLALCHEMY_DATABASE_URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
@@ -119,9 +113,9 @@ def moderate_content(content):
 
 @app.route('/')
 @login_required
-def newsfeed():
+def home():
     posts = Post.query.order_by(Post.timestamp.desc()).all()
-    return render_template('newsfeed.html', posts=posts)
+    return render_template('home.html', posts=posts)
 
 @app.route('/profile/<username>')
 @login_required
@@ -165,7 +159,7 @@ def select_hashtags():
     db.session.commit()
     
     flash('Your post has been created!', 'success')
-    return redirect(url_for('newsfeed'))
+    return redirect(url_for('home'))
 
 
 @app.route('/post/confirm', methods=['POST'])
@@ -179,7 +173,7 @@ def confirm_post():
         db.session.add(post)
         db.session.commit()
         flash('Your post has been created!', 'success')
-        return redirect(url_for('newsfeed'))
+        return redirect(url_for('home'))
     else:
         alternative_content = generate_alternative_content(content)
         return render_template('revise_post.html', original_content=content, alternative_content=alternative_content)
@@ -192,7 +186,7 @@ def revise_post():
     db.session.add(post)
     db.session.commit()
     flash('Your revised post has been created!', 'success')
-    return redirect(url_for('newsfeed'))
+    return redirect(url_for('home'))
 
 @app.route('/post/<int:post_id>/comment', methods=['POST'])
 @login_required
@@ -202,7 +196,7 @@ def comment_post(post_id):
     comment = Comment(content=content, author=current_user, post=post)
     db.session.add(comment)
     db.session.commit()
-    return redirect(url_for('newsfeed'))
+    return redirect(url_for('home'))
 
 @app.route('/post/<int:post_id>/like', methods=['POST'])
 @login_required
@@ -215,7 +209,7 @@ def like_post(post_id):
         like = Like(user=current_user, post=post)
         db.session.add(like)
     db.session.commit()
-    return redirect(url_for('newsfeed'))
+    return redirect(url_for('home'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -225,7 +219,7 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
             login_user(user)
-            return redirect(url_for('newsfeed'))
+            return redirect(url_for('home'))
         flash('Invalid username or password', 'error')
     return render_template('login.html')
 
@@ -242,7 +236,7 @@ def signup():
             db.session.add(new_user)
             db.session.commit()
             login_user(new_user)
-            return redirect(url_for('newsfeed'))
+            return redirect(url_for('home'))
     return render_template('signup.html')
 
 
@@ -268,9 +262,7 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
-def create_tables():
+if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-
-if __name__ == '__main__':
-    create_tables()
+    app.run(debug=True)
