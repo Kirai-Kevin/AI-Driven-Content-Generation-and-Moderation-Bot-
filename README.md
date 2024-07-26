@@ -1,18 +1,14 @@
 # AI-Driven Content Generation and Moderation Bot
 
-## System Design and Architecture
 
-This project is a Flask-based web application that uses Google's Gemini Pro model for AI-driven content generation and moderation. The system consists of the following main components:
+1.  https://docs.google.com/document/d/1fOkOMjSE17T92-v4i4zUoS_5DC6mQvYZVdtB4RxQHs8/edit?usp=sharing
 
-- Flask Web Application: Handles routing, user interactions, and integrates all components.
-- SQLite Database: Stores user data, posts, comments, and likes.
-- Gemini Pro Integration: Provides AI capabilities for content generation and moderation.
+2.  https://docs.google.com/document/d/1aGacTNPMwO5s4JfjlRHc2GtnEIEm2fWGNFn3hw3rUYA/edit?usp=sharing
 
-### Key Files:
-- `app.py`: Main application file containing routes and business logic.
-- `models.py`: Defines database models using SQLAlchemy.
-- `requirements.txt`: Lists all Python dependencies.
-- `wsgi.py`: Entry point for WSGI servers.
+3.  https://docs.google.com/document/d/1-l550kHi9mbzWOw92MgKFrLhgYVAnzB4AiJXqSVDRw0/edit?usp=sharing
+
+4.  https://docs.google.com/document/d/1Vymj17Vk9eznrJq5KJnjkur4nPQImd_SUiIpxKCymiM/edit?usp=sharing
+
 
 ## Deployment and Usage Instructions
 
@@ -61,93 +57,3 @@ This project is a Flask-based web application that uses Google's Gemini Pro mode
    ```
 
 3. Access the application at `http://localhost:5000`
-
-## Algorithms and Models
-
-### Content Generation
-The system uses Google's Gemini Pro model to generate content based on user prompts, desired word count, topic, and mood. The `generate_content` function in `app.py` handles this process.
-
-### Content Moderation
-The `moderate_content` and `moderate_comment` functions use Gemini Pro to analyze content for appropriateness, bias, and guideline violations.
-
-### Hashtag and Emoji Generation
-The `add_hashtags_and_emojis` function enhances generated content with relevant hashtags and emojis.
-
-## API Documentation
-
-### Routes
-
-#### POST `/post/new`
-Creates a new post.
-- Request Body:
-  - `content`: String
-  - `wordCount`: Integer
-  - `topic`: String
-  - `mood`: String
-- Response: Redirects to confirmation page or displays error
-
-#### POST `/post/confirm`
-Confirms and publishes a post.
-- Request Body:
-  - `content`: String
-- Response: Redirects to home page or displays error
-
-#### POST `/post/<int:post_id>/comment`
-Adds a comment to a post.
-- URL Parameters:
-  - `post_id`: Integer
-- Request Body:
-  - `content`: String
-- Response: Redirects to home page
-
-#### POST `/post/<int:post_id>/like`
-Toggles like on a post.
-- URL Parameters:
-  - `post_id`: Integer
-- Response: Redirects to home page
-
-## Database Schema
-
-### User
-- id: Integer (Primary Key)
-- username: String (Unique)
-- password: String
-
-### Post
-- id: Integer (Primary Key)
-- content: Text
-- timestamp: DateTime
-- user_id: Integer (Foreign Key to User)
-
-### Comment
-- id: Integer (Primary Key)
-- content: Text
-- timestamp: DateTime
-- user_id: Integer (Foreign Key to User)
-- post_id: Integer (Foreign Key to Post)
-
-### Like
-- id: Integer (Primary Key)
-- user_id: Integer (Foreign Key to User)
-- post_id: Integer (Foreign Key to Post)
-
-## Configuration
-
-The application uses environment variables for configuration. Ensure the following variables are set:
-- `SECRET_KEY`: Flask secret key
-- `DATABASE_URI`: SQLite database URI
-- `GEMINI_API_KEY`: API key for Google's Gemini Pro
-
-## Limitations and Potential Improvements
-
-### Current Limitations
-- Limited to text-based content generation
-- Basic user authentication system
-- No real-time updates for likes and comments
-
-### Potential Improvements
-- Implement more advanced content moderation techniques like image generation
-- Add support for image and video content
-- Enhance user profiles with additional features like story, bio, follow
-- Implement more robust error handling that offers alternatives
-```
