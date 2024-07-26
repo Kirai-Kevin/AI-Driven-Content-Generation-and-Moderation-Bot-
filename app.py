@@ -91,7 +91,7 @@ def generate_content(prompt, desired_word_count, topic, mood):
         return add_hashtags_and_emojis(generated_text, topic, mood)
     except Exception as e:
         print(f"Error in generate_content: {str(e)}")
-        return "An error occurred while generating content. Please try again."
+        return "Your content was innapropriate. Please try again."
     
 def generate_alternative_content(content):
     try:
@@ -119,7 +119,7 @@ def moderate_content(content):
         return response.text.strip()
     except Exception as e:
         print(f"Error in moderate_content: {str(e)}")
-        return "ERROR: Unable to moderate content"
+        return "ERROR: Your content was innapropriate. Please try again"
     
 def moderate_comment(content):
     try:
@@ -134,7 +134,7 @@ def moderate_comment(content):
         return response.text.strip()
     except Exception as e:
         print(f"Error in moderate_comment: {str(e)}")
-        return "ERROR: Unable to moderate comment"
+        return "ERROR: Your comment was innapropriate. Please try again"
 
 @app.route('/')
 @login_required
@@ -294,18 +294,21 @@ def signup():
 @app.route('/post/<int:post_id>/delete', methods=['POST'])
 @login_required
 def delete_post(post_id):
-    post = Post.query.get_or_404(post_id)
-    if post.author != current_user:
-        flash('You do not have permission to delete this post.', 'error')
-        return redirect(url_for('profile', username=post.author.username))
-    
-    # Simulate a delay (remove in production)
-    time.sleep(1)
-    
-    db.session.delete(post)
-    db.session.commit()
-    flash('Your post has been deleted.', 'success')
-    return redirect(url_for('profile', username=current_user.username))
+    try:
+        post = Post.query.get_or_404(post_id)
+        if post.author != current_user:
+            flash('You do not have permission to delete this post.', 'error')
+            return redirect(url_for('profile', username=post.author.username))
+        
+        db.session.delete(post)
+        db.session.commit()
+        flash('Your post has been deleted.', 'success')
+        return redirect(url_for('profile', username=current_user.username))
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error deleting post: {str(e)}")
+        flash('An error occurred while deleting the post.', 'error')
+        return redirect(url_for('profile', username=current_user.username))
 
 @app.route('/logout')
 @login_required
